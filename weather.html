@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>World Weather - Offline</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg: #020b18;
+    --card: rgba(8, 31, 55, .78);
+    --blue: #1497ff;
+    --cyan: #39c7ff;
+    --text: #fff;
+    --muted: #9eb4c9;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at 15% 20%,
+            #073866 0,
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 85% 10%,
+            #172d65 0,
+            transparent 30%
+        ),
+        linear-gradient(
+            145deg,
+            #010814,
+            #061b32,
+            #02101f
+        );
+
+    overflow-x: hidden;
+}
+
+
+/* STARS */
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+
+    pointer-events: none;
+
+    background-image:
+        radial-gradient(
+            white 1px,
+            transparent 1px
+        ),
+        radial-gradient(
+            #49baff 1px,
+            transparent 1px
+        );
+
+    background-size:
+        90px 90px,
+        140px 140px;
+
+    opacity: .25;
+
+    animation: stars 35s linear infinite;
+}
+
+@keyframes stars {
+
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-100px);
+    }
+
+}
+
+
+/* HEADER */
+
+header {
+
+    height: 88px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 0 35px;
+
+    border-bottom:
+        1px solid rgba(255,255,255,.1);
+
+    background:
+        rgba(2,12,25,.75);
+
+    backdrop-filter: blur(20px);
+
+    position: relative;
+
+    z-index: 2;
+
+}
+
+
+.logo {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+}
+
+
+.logo-icon {
+
+    font-size: 38px;
+
+}
+
+
+.logo h1 {
+
+    font-size: 23px;
+
+}
+
+
+.logo p {
+
+    color: var(--muted);
+
+    font-size: 13px;
+
+    margin-top: 4px;
+
+}
+
+
+.units {
+
+    display: flex;
+
+    padding: 4px;
+
+    background:
+        rgba(255,255,255,.06);
+
+    border:
+        1px solid rgba(255,255,255,.1);
+
+    border-radius: 15px;
+
+}
+
+
+.units button {
+
+    border: none;
+
+    background: transparent;
+
+    color: white;
+
+    padding: 10px 18px;
+
+    border-radius: 11px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+
+}
+
+
+.units button.active {
+
+    background:
+        linear-gradient(
+            135deg,
+            #169aff,
+            #086dd4
+        );
+
+    box-shadow:
+        0 0 20px
+        rgba(20,150,255,.4);
+
+}
+
+
+/* HERO */
+
+.hero {
+
+    max-width: 1250px;
+
+    margin: auto;
+
+    padding: 65px 25px 35px;
+
+}
+
+
+.hero-content {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 50px;
+
+    align-items: center;
+
+}
+
+
+.hero h2 {
+
+    font-size:
+        clamp(40px,5vw,65px);
+
+    line-height: 1.05;
+
+    margin-bottom: 20px;
+
+}
+
+
+.hero h2 span {
+
+    color: var(--blue);
+
+}
+
+
+.hero-description {
+
+    color: #b5c9dc;
+
+    font-size: 18px;
+
+    line-height: 1.6;
+
+    max-width: 550px;
+
+}
+
+
+/* STATS */
+
+.stats {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4,1fr);
+
+    gap: 10px;
+
+    padding: 25px;
+
+    border-radius: 24px;
+
+    background:
+        rgba(10,44,75,.55);
+
+    border:
+        1px solid
+        rgba(90,180,255,.25);
+
+    backdrop-filter: blur(18px);
+
+}
+
+
+.stat {
+
+    text-align: center;
+
+}
+
+
+.stat-icon {
+
+    font-size: 28px;
+
+    margin-bottom: 8px;
+
+}
+
+
+.stat-number {
+
+    font-size: 24px;
+
+    font-weight: bold;
+
+}
+
+
+.stat-label {
+
+    color: var(--muted);
+
+    font-size: 13px;
+
+    margin-top: 5px;
+
+}
+
+
+/* CONTROLS */
+
+.controls {
+
+    max-width: 1250px;
+
+    margin: 15px auto 30px;
+
+    padding: 0 25px;
+
+    display: flex;
+
+    gap: 15px;
+
+}
+
+
+.search {
+
+    flex: 1;
+
+}
+
+
+.search input {
+
+    width: 100%;
+
+    height: 55px;
+
+    padding: 0 20px;
+
+    border-radius: 17px;
+
+    border:
+        1px solid
+        rgba(100,180,255,.28);
+
+    background:
+        rgba(5,25,45,.75);
+
+    color: white;
+
+    outline: none;
+
+    font-size: 15px;
+
+}
+
+
+.sort select {
+
+    width: 240px;
+
+    height: 55px;
+
+    padding: 0 18px;
+
+    border-radius: 17px;
+
+    border:
+        1px solid
+        rgba(100,180,255,.28);
+
+    background:
+        #08213a;
+
+    color: white;
+
+    outline: none;
+
+    cursor: pointer;
+
+}
+
+
+/* MAIN */
+
+main {
+
+    max-width: 1250px;
+
+    margin: auto;
+
+    padding: 0 25px 50px;
+
+}
+
+
+.status {
+
+    color: var(--muted);
+
+    margin-bottom: 20px;
+
+}
+
+
+/* WEATHER GRID */
+
+.weather-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4,1fr);
+
+    gap: 17px;
+
+}
+
+
+/* CARD */
+
+.weather-card {
+
+    min-height: 330px;
+
+    padding: 20px;
+
+    border-radius: 22px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(23,66,105,.78),
+            rgba(3,23,42,.9)
+        );
+
+    border:
+        1px solid
+        rgba(105,190,255,.23);
+
+    box-shadow:
+        0 15px 40px
+        rgba(0,0,0,.25);
+
+    transition: .3s;
+
+}
+
+
+.weather-card:hover {
+
+    transform:
+        translateY(-7px);
+
+    border-color:
+        rgba(50,180,255,.7);
+
+    box-shadow:
+        0 20px 50px
+        rgba(0,120,255,.2);
+
+}
+
+
+.country {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content:
+        space-between;
+
+}
+
+
+.country-info {
+
+    display: flex;
+
+    gap: 12px;
+
+    align-items: center;
+
+}
+
+
+.flag {
+
+    font-size: 32px;
+
+}
+
+
+.country-name {
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+}
+
+
+.capital {
+
+    color: #9db1c5;
+
+    font-size: 13px;
+
+    margin-top: 4px;
+
+}
+
+
+.favorite {
+
+    font-size: 25px;
+
+    color: #b7c5d4;
+
+    cursor: pointer;
+
+}
+
+
+.favorite.active {
+
+    color: #ffd84d;
+
+}
+
+
+/* TEMPERATURE */
+
+.temperature-area {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content:
+        space-between;
+
+    margin-top: 30px;
+
+}
+
+
+.temperature {
+
+    font-size: 51px;
+
+}
+
+
+.temperature small {
+
+    font-size: 22px;
+
+}
+
+
+.weather-icon {
+
+    font-size: 58px;
+
+}
+
+
+.condition {
+
+    color: #25b4ff;
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+}
+
+
+/* DETAILS */
+
+.details {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap: 5px;
+
+    margin-top: 22px;
+
+    padding: 10px 7px;
+
+    border-radius: 13px;
+
+    background:
+        rgba(255,255,255,.05);
+
+}
+
+
+.detail {
+
+    text-align: center;
+
+    color: #a9bfd3;
+
+    font-size: 11px;
+
+}
+
+
+.detail-icon {
+
+    display: block;
+
+    font-size: 18px;
+
+    margin-bottom: 5px;
+
+}
+
+
+.detail strong {
+
+    display: block;
+
+    color: white;
+
+    font-size: 13px;
+
+}
+
+
+.feels {
+
+    text-align: center;
+
+    margin-top: 18px;
+
+    color: #c3d0de;
+
+    font-size: 13px;
+
+}
+
+
+/* OFFLINE BADGE */
+
+.offline {
+
+    position: fixed;
+
+    right: 20px;
+
+    bottom: 20px;
+
+    background:
+        rgba(5,30,50,.9);
+
+    border:
+        1px solid
+        rgba(50,190,255,.3);
+
+    padding: 10px 15px;
+
+    border-radius: 20px;
+
+    color: #7fd8ff;
+
+    font-size: 12px;
+
+    backdrop-filter: blur(15px);
+
+}
+
+
+/* FOOTER */
+
+footer {
+
+    text-align: center;
+
+    padding: 25px;
+
+    color: #71879b;
+
+    font-size: 13px;
+
+}
+
+
+/* RESPONSIVE */
+
+@media(max-width:1050px) {
+
+    .weather-grid {
+
+        grid-template-columns:
+            repeat(3,1fr);
+
+    }
+
+}
+
+
+@media(max-width:800px) {
+
+    .hero-content {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .stats {
+
+        grid-template-columns:
+            repeat(2,1fr);
+
+    }
+
+    .weather-grid {
+
+        grid-template-columns:
+            repeat(2,1fr);
+
+    }
+
+    .controls {
+
+        flex-direction: column;
+
+    }
+
+    .sort select {
+
+        width: 100%;
+
+    }
+
+}
+
+
+@media(max-width:550px) {
+
+    header {
+
+        padding: 0 18px;
+
+    }
+
+    .weather-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .hero h2 {
+
+        font-size: 42px;
+
+    }
+
+    .logo p {
+
+        display: none;
+
+    }
+
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<header>
+
+    <div class="logo">
+
+        <div class="logo-icon">
+            🌍
+        </div>
+
+        <div>
+
+            <h1>
+                World Weather
+            </h1>
+
+            <p>
+                Offline weather dashboard
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="units">
+
+        <button
+            id="celsius"
+            class="active"
+            onclick="setUnit('C')"
+        >
+            °C
+        </button>
+
+        <button
+            id="fahrenheit"
+            onclick="setUnit('F')"
+        >
+            °F
+        </button>
+
+    </div>
+
+</header>
+
+
+
+<section class="hero">
+
+    <div class="hero-content">
+
+        <div>
+
+            <h2>
+                Explore Weather
+                <br>
+                Around the <span>World</span>
+            </h2>
+
+            <p class="hero-description">
+
+                Explore weather information
+                from countries around the world
+                with this completely offline
+                weather dashboard.
+
+            </p>
+
+        </div>
+
+
+        <div class="stats">
+
+            <div class="stat">
+
+                <div class="stat-icon">
+                    🌐
+                </div>
+
+                <div
+                    class="stat-number"
+                    id="countryCount"
+                >
+                    20
+                </div>
+
+                <div class="stat-label">
+                    Countries
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div class="stat-icon">
+                    ☁️
+                </div>
+
+                <div class="stat-number">
+                    Offline
+                </div>
+
+                <div class="stat-label">
+                    Weather
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div class="stat-icon">
+                    ⚡
+                </div>
+
+                <div class="stat-number">
+                    Fast
+                </div>
+
+                <div class="stat-label">
+                    Loading
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div class="stat-icon">
+                    🔒
+                </div>
+
+                <div class="stat-number">
+                    Private
+                </div>
+
+                <div class="stat-label">
+                    No Tracking
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<section class="controls">
+
+    <div class="search">
+
+        <input
+            id="search"
+            type="text"
+            placeholder="🔎 Search country or capital..."
+        >
+
+    </div>
+
+
+    <div class="sort">
+
+        <select id="sort">
+
+            <option value="name">
+                Sort by Name
+            </option>
+
+            <option value="high">
+                Temperature: High → Low
+            </option>
+
+            <option value="low">
+                Temperature: Low → High
+            </option>
+
+        </select>
+
+    </div>
+
+</section>
+
+
+
+<main>
+
+    <div
+        class="status"
+        id="status"
+    >
+        Showing offline weather data
+    </div>
+
+
+    <div
+        class="weather-grid"
+        id="weatherGrid"
+    >
+    </div>
+
+</main>
+
+
+
+<div class="offline">
+
+    🔒 100% Offline
+
+</div>
+
+
+
+<footer>
+
+    © 2026 World Weather ·
+    No internet required
+
+</footer>
+
+
+
+<script>
+
+
+/*
+=========================================
+OFFLINE WEATHER DATA
+=========================================
+*/
+
+const weatherData = [
+
+    {
+        name: "India",
+        capital: "New Delhi",
+        flag: "🇮🇳",
+        temp: 32,
+        humidity: 56,
+        wind: 14,
+        clouds: 12,
+        feels: 35,
+        icon: "☀️",
+        condition: "Sunny"
+    },
+
+    {
+        name: "United States",
+        capital: "Washington, D.C.",
+        flag: "🇺🇸",
+        temp: 24,
+        humidity: 61,
+        wind: 16,
+        clouds: 40,
+        feels: 24,
+        icon: "⛅",
+        condition: "Partly Cloudy"
+    },
+
+    {
+        name: "United Kingdom",
+        capital: "London",
+        flag: "🇬🇧",
+        temp: 16,
+        humidity: 87,
+        wind: 13,
+        clouds: 90,
+        feels: 14,
+        icon: "🌧️",
+        condition: "Light Rain"
+    },
+
+    {
+        name: "Japan",
+        capital: "Tokyo",
+        flag: "🇯🇵",
+        temp: 28,
+        humidity: 55,
+        wind: 9,
+        clouds: 0,
+        feels: 30,
+        icon: "☀️",
+        condition: "Clear"
+    },
+
+    {
+        name: "Canada",
+        capital: "Ottawa",
+        flag: "🇨🇦",
+        temp: 18,
+        humidity: 72,
+        wind: 11,
+        clouds: 75,
+        feels: 18,
+        icon: "☁️",
+        condition: "Cloudy"
+    },
+
+    {
+        name: "Australia",
+        capital: "Canberra",
+        flag: "🇦🇺",
+        temp: 22,
+        humidity: 64,
+        wind: 20,
+        clouds: 35,
+        feels: 24,
+        icon: "🌤️",
+        condition: "Partly Cloudy"
+    },
+
+    {
+        name: "Brazil",
+        capital: "Brasília",
+        flag: "🇧🇷",
+        temp: 30,
+        humidity: 70,
+        wind: 18,
+        clouds: 95,
+        feels: 33,
+        icon: "⛈️",
+        condition: "Thunderstorm"
+    },
+
+    {
+        name: "Egypt",
+        capital: "Cairo",
+        flag: "🇪🇬",
+        temp: 36,
+        humidity: 18,
+        wind: 12,
+        clouds: 5,
+        feels: 36,
+        icon: "☀️",
+        condition: "Sunny"
+    },
+
+    {
+        name: "France",
+        capital: "Paris",
+        flag: "🇫🇷",
+        temp: 21,
+        humidity: 65,
+        wind: 12,
+        clouds: 48,
+        feels: 21,
+        icon: "🌤️",
+        condition: "Mostly Clear"
+    },
+
+    {
+        name: "Germany",
+        capital: "Berlin",
+        flag: "🇩🇪",
+        temp: 19,
+        humidity: 68,
+        wind: 15,
+        clouds: 60,
+        feels: 18,
+        icon: "☁️",
+        condition: "Cloudy"
+    },
+
+    {
+        name: "Italy",
+        capital: "Rome",
+        flag: "🇮🇹",
+        temp: 27,
+        humidity: 52,
+        wind: 10,
+        clouds: 20,
+        feels: 28,
+        icon: "☀️",
+        condition: "Sunny"
+    },
+
+    {
+        name: "Spain",
+        capital: "Madrid",
+        flag: "🇪🇸",
+        temp: 31,
+        humidity: 35,
+        wind: 14,
+        clouds: 10,
+        feels: 31,
+        icon: "☀️",
+        condition: "Clear"
+    },
+
+    {
+        name: "China",
+        capital: "Beijing",
+        flag: "🇨🇳",
+        temp: 25,
+        humidity: 59,
+        wind: 13,
+        clouds: 35,
+        feels: 26,
+        icon: "⛅",
+        condition: "Partly Cloudy"
+    },
+
+    {
+        name: "South Korea",
+        capital: "Seoul",
+        flag: "🇰🇷",
+        temp: 23,
+        humidity: 70,
+        wind: 10,
+        clouds: 55,
+        feels: 24,
+        icon: "🌦️",
+        condition: "Light Rain"
+    },
+
+    {
+        name: "Mexico",
+        capital: "Mexico City",
+        flag: "🇲🇽",
+        temp: 26,
+        humidity: 48,
+        wind: 9,
+        clouds: 30,
+        feels: 26,
+        icon: "🌤️",
+        condition: "Mostly Clear"
+    },
+
+    {
+        name: "South Africa",
+        capital: "Pretoria",
+        flag: "🇿🇦",
+        temp: 20,
+        humidity: 45,
+        wind: 17,
+        clouds: 25,
+        feels: 19,
+        icon: "🌤️",
+        condition: "Partly Cloudy"
+    },
+
+    {
+        name: "Russia",
+        capital: "Moscow",
+        flag: "🇷🇺",
+        temp: 12,
+        humidity: 78,
+        wind: 16,
+        clouds: 80,
+        feels: 9,
+        icon: "☁️",
+        condition: "Overcast"
+    },
+
+    {
+        name: "Singapore",
+        capital: "Singapore",
+        flag: "🇸🇬",
+        temp: 30,
+        humidity: 82,
+        wind: 8,
+        clouds: 70,
+        feels: 35,
+        icon: "🌦️",
+        condition: "Showers"
+    },
+
+    {
+        name: "Argentina",
+        capital: "Buenos Aires",
+        flag: "🇦🇷",
+        temp: 23,
+        humidity: 58,
+        wind: 12,
+        clouds: 35,
+        feels: 23,
+        icon: "⛅",
+        condition: "Partly Cloudy"
+    },
+
+    {
+        name: "United Arab Emirates",
+        capital: "Abu Dhabi",
+        flag: "🇦🇪",
+        temp: 39,
+        humidity: 40,
+        wind: 18,
+        clouds: 5,
+        feels: 43,
+        icon: "☀️",
+        condition: "Hot & Sunny"
+    }
+
+];
+
+
+let unit = "C";
+
+
+
+/*
+=========================================
+TEMPERATURE
+=========================================
+*/
+
+function convertTemp(temp) {
+
+    if (unit === "F") {
+
+        return Math.round(
+            temp * 9 / 5 + 32
+        );
+
+    }
+
+    return Math.round(temp);
+
+}
+
+
+
+/*
+=========================================
+RENDER
+=========================================
+*/
+
+function renderWeather() {
+
+    const search =
+        document
+        .getElementById("search")
+        .value
+        .toLowerCase()
+        .trim();
+
+
+    const sort =
+        document
+        .getElementById("sort")
+        .value;
+
+
+    let data =
+        weatherData.filter(item =>
+
+            item.name
+            .toLowerCase()
+            .includes(search)
+
+            ||
+
+            item.capital
+            .toLowerCase()
+            .includes(search)
+
+        );
+
+
+    /*
+    SORT
+    */
+
+    if (sort === "high") {
+
+        data.sort(
+            (a,b) =>
+                b.temp - a.temp
+        );
+
+    }
+
+    else if (sort === "low") {
+
+        data.sort(
+            (a,b) =>
+                a.temp - b.temp
+        );
+
+    }
+
+    else {
+
+        data.sort(
+            (a,b) =>
+                a.name.localeCompare(
+                    b.name
+                )
+        );
+
+    }
+
+
+    document.getElementById(
+        "status"
+    ).innerText =
+
+        `${data.length} countries shown · Offline mode`;
+
+
+    const grid =
+        document.getElementById(
+            "weatherGrid"
+        );
+
+
+    /*
+    NO RESULTS
+    */
+
+    if (data.length === 0) {
+
+        grid.innerHTML = `
+
+            <div
+                style="
+                    grid-column:1/-1;
+                    text-align:center;
+                    padding:70px;
+                    color:#9eb4c9;
+                "
+            >
+
+                🔎
+
+                <br><br>
+
+                No countries found.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    /*
+    CARDS
+    */
+
+    grid.innerHTML = data.map(
+        item => `
+
+        <article class="weather-card">
+
+
+            <div class="country">
+
+                <div class="country-info">
+
+                    <div class="flag">
+                        ${item.flag}
+                    </div>
+
+                    <div>
+
+                        <div class="country-name">
+                            ${item.name}
+                        </div>
+
+                        <div class="capital">
+                            ${item.capital}
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="favorite"
+                    onclick="favorite(this)"
+                >
+                    ☆
+                </div>
+
+            </div>
+
+
+
+            <div class="temperature-area">
+
+                <div>
+
+                    <div class="temperature">
+
+                        ${convertTemp(item.temp)}
+
+                        <small>
+                            °${unit}
+                        </small>
+
+                    </div>
+
+
+                    <div class="condition">
+
+                        ${item.condition}
+
+                    </div>
+
+                </div>
+
+
+                <div class="weather-icon">
+
+                    ${item.icon}
+
+                </div>
+
+            </div>
+
+
+
+            <div class="details">
+
+
+                <div class="detail">
+
+                    <span class="detail-icon">
+                        💧
+                    </span>
+
+                    <strong>
+                        ${item.humidity}%
+                    </strong>
+
+                    Humidity
+
+                </div>
+
+
+                <div class="detail">
+
+                    <span class="detail-icon">
+                        💨
+                    </span>
+
+                    <strong>
+                        ${item.wind} km/h
+                    </strong>
+
+                    Wind
+
+                </div>
+
+
+                <div class="detail">
+
+                    <span class="detail-icon">
+                        ☁️
+                    </span>
+
+                    <strong>
+                        ${item.clouds}%
+                    </strong>
+
+                    Clouds
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="feels">
+
+                Feels like
+
+                <strong>
+
+                    ${convertTemp(item.feels)}
+                    °${unit}
+
+                </strong>
+
+            </div>
+
+
+        </article>
+
+    `).join("");
+
+}
+
+
+
+/*
+=========================================
+FAVORITE
+=========================================
+*/
+
+function favorite(element) {
+
+    element.classList.toggle(
+        "active"
+    );
+
+
+    element.innerText =
+        element.classList.contains("active")
+        ? "★"
+        : "☆";
+
+}
+
+
+
+/*
+=========================================
+UNIT
+=========================================
+*/
+
+function setUnit(newUnit) {
+
+    unit = newUnit;
+
+
+    document
+        .getElementById("celsius")
+        .classList
+        .toggle(
+            "active",
+            unit === "C"
+        );
+
+
+    document
+        .getElementById("fahrenheit")
+        .classList
+        .toggle(
+            "active",
+            unit === "F"
+        );
+
+
+    renderWeather();
+
+}
+
+
+
+/*
+=========================================
+SEARCH
+=========================================
+*/
+
+document
+    .getElementById("search")
+    .addEventListener(
+        "input",
+        renderWeather
+    );
+
+
+
+/*
+=========================================
+SORT
+=========================================
+*/
+
+document
+    .getElementById("sort")
+    .addEventListener(
+        "change",
+        renderWeather
+    );
+
+
+
+/*
+=========================================
+START WEBSITE
+=========================================
+*/
+
+document
+    .getElementById("countryCount")
+    .innerText =
+    weatherData.length;
+
+
+renderWeather();
+
+</script>
+
+</body>
+</html>
